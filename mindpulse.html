@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindPulse — Mental Health Tracker Wearable</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --mint:#E1F5EE;--mint-mid:#1D9E75;--mint-dark:#085041;
+      --lavender:#EEEDFE;--lav-mid:#7F77DD;--lav-dark:#3C3489;
+      --coral:#FAECE7;--coral-mid:#D85A30;
+      --bg:#f8faf9;--text:#1a1a2e;--muted:#6b7280;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+    /* ===== PAGE SYSTEM ===== */
+    .page{display:none;min-height:100vh}
+    .page.active{display:block}
+
+    /* NAV */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 3rem;background:white;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:100}
+    .logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+    .logo-icon{width:36px;height:36px;background:var(--mint-mid);border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .logo-icon svg{width:18px;height:18px;fill:white}
+    .logo-name{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text)}
+    .nav-links{display:flex;gap:2rem;list-style:none}
+    .nav-links a{text-decoration:none;color:var(--muted);font-size:14px;font-weight:400;transition:color .2s;cursor:pointer}
+    .nav-links a:hover{color:var(--mint-mid)}
+    .nav-cta{background:var(--mint-mid);color:white;padding:.55rem 1.4rem;border-radius:100px;font-size:14px;font-weight:500;text-decoration:none;transition:opacity .2s;cursor:pointer;border:none}
+    .nav-cta:hover{opacity:.85}
+    .nav-right{display:flex;gap:1rem;align-items:center}
+    .nav-login{color:var(--text);font-size:14px;font-weight:500;text-decoration:none;cursor:pointer;padding:.55rem 1rem;border-radius:100px;transition:background .2s}
+    .nav-login:hover{background:#f3f4f6}
+    .nav-user{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+    .nav-user-avatar{width:32px;height:32px;border-radius:50%;background:var(--mint-mid);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+    /* HERO */
+    .hero{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;padding:6rem 3rem 4rem;max-width:1200px;margin:0 auto}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:var(--mint-dark);font-size:12px;font-weight:500;padding:.35rem 1rem;border-radius:100px;margin-bottom:1.5rem;letter-spacing:.04em}
+    .hero-badge span{width:6px;height:6px;background:var(--mint-mid);border-radius:50%;animation:pulse 1.8s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+    h1{font-family:'DM Serif Display',serif;font-size:3.2rem;line-height:1.15;margin-bottom:1.2rem;color:var(--text)}
+    h1 em{font-style:italic;color:var(--mint-mid)}
+    .hero-sub{font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:2rem;font-weight:300;max-width:440px}
+    .hero-btns{display:flex;gap:1rem;align-items:center}
+    .btn-primary{background:var(--mint-mid);color:white;padding:.75rem 1.8rem;border-radius:100px;font-size:15px;font-weight:500;text-decoration:none;transition:transform .2s,box-shadow .2s;cursor:pointer;border:none;display:inline-block}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(29,158,117,.25)}
+    .btn-ghost{color:var(--text);font-size:14px;text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:500;cursor:pointer}
+    .btn-ghost:hover{color:var(--mint-mid)}
+    .hero-trust{font-size:13px;color:var(--muted);margin-top:1.5rem}
+    .hero-trust strong{color:var(--text)}
+
+    /* DEVICE MOCKUP */
+    .device-wrap{position:relative;display:flex;justify-content:center}
+    .device{background:white;border-radius:28px;border:2px solid #e5e7eb;padding:1.5rem;width:280px;box-shadow:0 20px 60px rgba(0,0,0,.08)}
+    .device-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+    .device-time{font-size:13px;color:var(--muted);font-weight:500}
+    .device-status{font-size:11px;background:var(--mint);color:var(--mint-dark);padding:3px 10px;border-radius:100px;font-weight:500}
+    .score-ring{text-align:center;margin:1rem 0}
+    .score-ring svg{width:130px;height:130px}
+    .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1rem 0}
+    .metric-card{background:var(--bg);border-radius:12px;padding:.75rem;text-align:center}
+    .metric-val{font-size:1.2rem;font-weight:500;color:var(--text)}
+    .metric-name{font-size:11px;color:var(--muted);margin-top:2px}
+    .metric-icon{font-size:16px;margin-bottom:4px}
+    .mood-row{display:flex;gap:8px;margin-top:1rem}
+    .mood-btn{flex:1;background:var(--mint);border:none;border-radius:10px;padding:8px 6px;font-size:18px;cursor:pointer;transition:transform .15s}
+    .mood-btn:hover{transform:scale(1.12)}
+    .mood-btn.active{background:var(--mint-mid);transform:scale(1.1)}
+    .mood-prompt{font-size:12px;color:var(--muted);text-align:center;margin-top:.5rem}
+    .float-badge{position:absolute;background:white;border-radius:14px;border:1px solid #e5e7eb;padding:.6rem 1rem;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.07)}
+    .float-1{top:0;right:-20px}
+    .float-2{bottom:30px;left:-30px}
+    .dot-green{width:8px;height:8px;background:#1D9E75;border-radius:50%}
+    .dot-lav{width:8px;height:8px;background:#7F77DD;border-radius:50%}
+
+    /* SECTIONS */
+    section{padding:5rem 3rem;max-width:1200px;margin:0 auto}
+    .section-tag{font-size:12px;font-weight:500;color:var(--mint-mid);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem}
+    .section-title{font-family:'DM Serif Display',serif;font-size:2.2rem;line-height:1.25;margin-bottom:1rem}
+    .section-sub{color:var(--muted);font-size:1rem;line-height:1.7;max-width:500px;font-weight:300}
+    .divider{width:100%;height:1px;background:#e5e7eb;max-width:1200px;margin:0 auto}
+
+    /* FEATURES */
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:3rem}
+    .feat-card{background:white;border-radius:20px;border:1px solid #e5e7eb;padding:2rem;transition:transform .2s,box-shadow .2s}
+    .feat-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.07)}
+    .feat-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;font-size:22px}
+    .feat-icon.teal{background:var(--mint)}
+    .feat-icon.lav{background:var(--lavender)}
+    .feat-icon.coral{background:var(--coral)}
+    .feat-card h3{font-size:1.05rem;font-weight:500;margin-bottom:.5rem}
+    .feat-card p{font-size:.9rem;color:var(--muted);line-height:1.65}
+
+    /* HOW IT WORKS */
+    .steps-row{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:3rem;position:relative}
+    .steps-row::before{content:'';position:absolute;top:28px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,#e5e7eb 20%,#e5e7eb 80%,transparent);z-index:0}
+    .step{text-align:center;position:relative;z-index:1}
+    .step-num{width:56px;height:56px;border-radius:50%;background:white;border:2px solid #e5e7eb;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--mint-mid);margin:0 auto 1rem}
+    .step h4{font-size:.95rem;font-weight:500;margin-bottom:.4rem}
+    .step p{font-size:.85rem;color:var(--muted);line-height:1.6}
+
+    /* STATS */
+    .stats-wrap{padding:0 3rem 4rem;max-width:1200px;margin:0 auto}
+    .stats-bar{background:var(--mint-mid);border-radius:24px;padding:3rem 4rem;display:flex;justify-content:space-around;align-items:center}
+    .stat{text-align:center;color:white}
+    .stat-num{font-family:'DM Serif Display',serif;font-size:2.8rem;line-height:1}
+    .stat-label{font-size:.85rem;opacity:.75;margin-top:.3rem;font-weight:300}
+
+    /* TESTIMONIALS */
+    .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+    .test-card{background:white;border:1px solid #e5e7eb;border-radius:20px;padding:1.5rem}
+    .test-header{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+    .test-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:500;font-size:14px;color:white}
+    .av1{background:#1D9E75}.av2{background:#7F77DD}.av3{background:#D85A30}
+    .test-name{font-weight:500;font-size:.95rem}
+    .test-role{font-size:.8rem;color:var(--muted)}
+    .stars{color:#F59E0B;font-size:13px;margin-bottom:.75rem}
+    .test-card blockquote{font-size:.9rem;color:var(--muted);line-height:1.7;font-style:italic}
+
+    /* CTA */
+    .cta-wrap{max-width:1140px;margin:0 auto 5rem;padding:0 3rem}
+    .cta-section{background:var(--text);border-radius:28px;padding:4rem;text-align:center}
+    .cta-section h2{font-family:'DM Serif Display',serif;font-size:2.4rem;color:white;margin-bottom:1rem}
+    .cta-section p{color:rgba(255,255,255,.6);font-size:1rem;margin-bottom:2rem;font-weight:300}
+    .cta-row{display:flex;gap:1rem;justify-content:center;align-items:center}
+    .btn-white{background:white;color:var(--text);padding:.75rem 2rem;border-radius:100px;font-size:15px;font-weight:500;text-decoration:none;transition:opacity .2s;cursor:pointer;border:none;display:inline-block}
+    .btn-white:hover{opacity:.9}
+    .btn-outline-white{border:1px solid rgba(255,255,255,.3);color:white;padding:.75rem 2rem;border-radius:100px;font-size:15px;font-weight:400;text-decoration:none;transition:border-color .2s;cursor:pointer;background:transparent}
+    .btn-outline-white:hover{border-color:rgba(255,255,255,.7)}
+
+    /* FOOTER */
+    .footer-inner{border-top:1px solid #e5e7eb;padding:2rem 3rem;display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto}
+    .footer-links{display:flex;gap:1.5rem;list-style:none}
+    .footer-links a{font-size:13px;color:var(--muted);text-decoration:none}
+    .footer-links a:hover{color:var(--mint-mid)}
+
+    /* ===== AUTH PAGE ===== */
+    .auth-page{background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+    .auth-page nav{margin-bottom:0}
+    .auth-container{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 1.5rem}
+    .auth-card{background:white;border-radius:28px;border:1px solid #e5e7eb;padding:2.8rem;width:100%;max-width:440px;box-shadow:0 8px 40px rgba(0,0,0,.06)}
+    .auth-card h2{font-family:'DM Serif Display',serif;font-size:2rem;margin-bottom:.4rem;color:var(--text)}
+    .auth-card .auth-sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem;line-height:1.6}
+    .auth-tabs{display:flex;background:#f3f4f6;border-radius:12px;padding:4px;margin-bottom:2rem;gap:4px}
+    .auth-tab{flex:1;text-align:center;padding:.55rem;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s;border:none;background:transparent}
+    .auth-tab.active{background:white;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .form-group{margin-bottom:1.2rem}
+    .form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:.45rem;color:var(--text)}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:.7rem 1rem;border:1.5px solid #e5e7eb;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:white;transition:border-color .2s;outline:none}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--mint-mid)}
+    .form-group textarea{resize:vertical;min-height:80px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .auth-btn{width:100%;background:var(--mint-mid);color:white;border:none;border-radius:100px;padding:.8rem;font-size:15px;font-weight:500;cursor:pointer;transition:opacity .2s,transform .2s;font-family:'DM Sans',sans-serif;margin-top:.5rem}
+    .auth-btn:hover{opacity:.88;transform:translateY(-1px)}
+    .auth-divider{text-align:center;color:var(--muted);font-size:13px;margin:1.2rem 0;position:relative}
+    .auth-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:#e5e7eb}
+    .auth-divider span{background:white;padding:0 .75rem;position:relative}
+    .auth-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:.65rem 1rem;font-size:13px;margin-bottom:1rem;display:none}
+    .auth-success{background:var(--mint);border:1px solid #a7f3d0;color:var(--mint-dark);border-radius:10px;padding:.65rem 1rem;font-size:13px;margin-bottom:1rem;display:none}
+    .forgot-link{text-align:right;font-size:12px;color:var(--muted);cursor:pointer;margin-top:-.8rem;margin-bottom:1rem}
+    .forgot-link:hover{color:var(--mint-mid)}
+
+    /* ===== PRE-ORDER PAGE ===== */
+    .preorder-page{background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+    .preorder-container{flex:1;max-width:800px;margin:0 auto;padding:3rem 1.5rem;width:100%}
+    .preorder-header{margin-bottom:2.5rem}
+    .preorder-header .back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:1.5rem;transition:color .2s}
+    .preorder-header .back-btn:hover{color:var(--mint-mid)}
+    .preorder-header h2{font-family:'DM Serif Display',serif;font-size:2.2rem;margin-bottom:.4rem}
+    .preorder-header p{color:var(--muted);font-size:.95rem;line-height:1.6}
+    .order-card{background:white;border-radius:24px;border:1px solid #e5e7eb;padding:2rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+    .order-card h3{font-size:1rem;font-weight:500;margin-bottom:1.2rem;display:flex;align-items:center;gap:8px}
+    .order-card h3 .card-icon{width:28px;height:28px;border-radius:8px;background:var(--mint);display:flex;align-items:center;justify-content:center;font-size:14px}
+    .product-select{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+    .product-opt{border:2px solid #e5e7eb;border-radius:16px;padding:1.2rem;cursor:pointer;transition:all .2s}
+    .product-opt.selected{border-color:var(--mint-mid);background:var(--mint)}
+    .product-opt:hover:not(.selected){border-color:#c4e8d9}
+    .product-opt .prod-name{font-weight:500;font-size:.95rem;margin-bottom:.3rem}
+    .product-opt .prod-price{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--mint-mid)}
+    .product-opt .prod-desc{font-size:.8rem;color:var(--muted);margin-top:.3rem}
+    .product-opt .prod-badge{display:inline-block;background:var(--mint-mid);color:white;font-size:10px;padding:2px 8px;border-radius:100px;margin-top:.4rem;font-weight:500}
+    .color-select{display:flex;gap:.75rem;margin-top:.5rem}
+    .color-dot{width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
+    .color-dot.selected{border-color:var(--mint-mid);transform:scale(1.1)}
+    .color-dot::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;opacity:0;transition:opacity .2s}
+    .color-dot.selected::after{opacity:1}
+    .order-summary{background:var(--mint);border-radius:16px;padding:1.2rem 1.5rem;margin-top:1.5rem}
+    .summary-row{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:.5rem;color:var(--mint-dark)}
+    .summary-row.total{font-weight:600;font-size:1rem;border-top:1px solid rgba(29,158,117,.2);padding-top:.6rem;margin-top:.6rem}
+    .place-order-btn{width:100%;background:var(--text);color:white;border:none;border-radius:100px;padding:1rem;font-size:16px;font-weight:500;cursor:pointer;transition:opacity .2s,transform .2s;font-family:'DM Serif Display',serif;margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:8px}
+    .place-order-btn:hover{opacity:.88;transform:translateY(-2px)}
+    .place-order-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .secure-note{text-align:center;color:var(--muted);font-size:12px;margin-top:.75rem}
+
+    /* ===== SUCCESS PAGE ===== */
+    .success-page{background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+    .success-container{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 1.5rem}
+    .success-card{background:white;border-radius:28px;border:1px solid #e5e7eb;padding:3rem;width:100%;max-width:520px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.06)}
+    .success-icon{width:72px;height:72px;background:var(--mint);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:32px;animation:popIn .4s ease}
+    @keyframes popIn{0%{transform:scale(0)}80%{transform:scale(1.1)}100%{transform:scale(1)}}
+    .success-card h2{font-family:'DM Serif Display',serif;font-size:2rem;margin-bottom:.5rem}
+    .success-card p{color:var(--muted);font-size:.95rem;line-height:1.7;margin-bottom:2rem}
+    .order-ref{background:var(--mint);border-radius:12px;padding:1rem 1.5rem;margin-bottom:2rem;font-size:.85rem;color:var(--mint-dark)}
+    .order-ref strong{display:block;font-size:1.1rem;font-family:'DM Serif Display',serif;color:var(--mint-dark);margin-top:.2rem}
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr;text-align:center;padding:3rem 1.5rem}
+      .hero-sub{margin:0 auto 2rem}
+      .hero-btns{justify-content:center}
+      .device-wrap{display:none}
+      .features-grid,.test-grid{grid-template-columns:1fr}
+      .steps-row{grid-template-columns:1fr 1fr}
+      .stats-bar{flex-direction:column;gap:2rem;padding:2rem}
+      nav{padding:1rem 1.5rem}
+      .nav-links{display:none}
+      section{padding:3rem 1.5rem}
+      .stats-wrap,.cta-wrap{padding:0 1.5rem 3rem}
+      .footer-inner{flex-direction:column;gap:1rem;text-align:center;padding:2rem 1.5rem}
+      .form-row{grid-template-columns:1fr}
+      .product-select{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PAGE: HOME -->
+<!-- ============================================================ -->
+<div id="page-home" class="page active">
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <span class="logo-name">MindPulse</span>
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="scrollTo('features')">Features</a></li>
+    <li><a onclick="scrollTo('howitworks')">How it works</a></li>
+    <li><a onclick="scrollTo('testimonials')">Reviews</a></li>
+    <li><a onclick="scrollTo('cta')">Pricing</a></li>
+  </ul>
+  <div class="nav-right" id="nav-right">
+    <span class="nav-login" onclick="showPage('page-login')">Login</span>
+    <button class="nav-cta" onclick="scrollTo('cta')">Get early access</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span></span>
+      Now in clinical pilot — 3 hospitals
+    </div>
+    <h1>Your mental health,<br><em>worn with care</em></h1>
+    <p class="hero-sub">MindPulse is a wearable + app system that tracks your stress, sleep, and emotional wellbeing continuously — so you can understand yourself better, every day.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="startPreorder()">Pre-order the band →</button>
+      <a href="#howitworks" class="btn-ghost">Watch demo ▶</a>
+    </div>
+    <p class="hero-trust">Trusted by <strong>2,400+ beta users</strong> across India &amp; Singapore</p>
+  </div>
+
+  <div class="device-wrap">
+    <div class="device">
+      <div class="device-header">
+        <span class="device-time">Tue, 7 Apr</span>
+        <span class="device-status">● Synced</span>
+      </div>
+      <div class="score-ring">
+        <svg viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="52" fill="none" stroke="#E1F5EE" stroke-width="10"/>
+          <circle cx="65" cy="65" r="52" fill="none" stroke="#1D9E75" stroke-width="10"
+            stroke-dasharray="327" stroke-dashoffset="82" stroke-linecap="round"
+            transform="rotate(-90 65 65)" style="transition:stroke-dashoffset 1s ease"/>
+          <text x="65" y="58" text-anchor="middle" font-family="DM Serif Display,serif" font-size="28" fill="#1a1a2e">74</text>
+          <text x="65" y="74" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#6b7280">Wellness Score</text>
+        </svg>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon">💤</div>
+          <div class="metric-val">6.8 h</div>
+          <div class="metric-name">Sleep</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">💓</div>
+          <div class="metric-val">72 bpm</div>
+          <div class="metric-name">Resting HR</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">🧘</div>
+          <div class="metric-val">Low</div>
+          <div class="metric-name">Stress</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon">🌡️</div>
+          <div class="metric-val">Normal</div>
+          <div class="metric-name">HRV</div>
+        </div>
+      </div>
+      <div class="mood-prompt">How are you feeling now?</div>
+      <div class="mood-row" id="moods">
+        <button class="mood-btn" onclick="selectMood(this)">😔</button>
+        <button class="mood-btn" onclick="selectMood(this)">😐</button>
+        <button class="mood-btn active" onclick="selectMood(this)">🙂</button>
+        <button class="mood-btn" onclick="selectMood(this)">😄</button>
+        <button class="mood-btn" onclick="selectMood(this)">🤩</button>
+      </div>
+    </div>
+    <div class="float-badge float-1">
+      <span class="dot-green"></span>
+      Anxiety down 18% this week
+    </div>
+    <div class="float-badge float-2">
+      <span class="dot-lav"></span>
+      Sleep quality improving
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <p class="section-tag">Why MindPulse</p>
+  <h2 class="section-title">Everything your mind &amp;<br>body are trying to tell you</h2>
+  <p class="section-sub">Continuous biometric sensing translated into meaningful mental health insights — not just steps and calories.</p>
+
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon teal">🧠</div>
+      <h3>Stress detection</h3>
+      <p>Real-time cortisol-linked HRV analysis flags stress episodes before they spiral — and suggests a 2-minute breathing reset.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon lav">🌙</div>
+      <h3>Sleep &amp; mood link</h3>
+      <p>Correlates sleep stage data with next-day mood check-ins, revealing your personal sleep-mood patterns over weeks.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon coral">📊</div>
+      <h3>Weekly wellbeing report</h3>
+      <p>AI-summarised weekly report highlights your mental health trends and offers clinically-backed micro-interventions.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon teal">🤝</div>
+      <h3>Therapist dashboard</h3>
+      <p>Share anonymised data with your therapist or counsellor for more informed, data-backed sessions.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon lav">🔔</div>
+      <h3>Gentle nudges</h3>
+      <p>Non-intrusive vibration alerts when your stress or screen-time thresholds spike — no overwhelming notifications.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon coral">🔒</div>
+      <h3>Privacy-first design</h3>
+      <p>Your data lives on-device first. Cloud sync is end-to-end encrypted. You own it, you control it, always.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="howitworks">
+  <p class="section-tag">How it works</p>
+  <h2 class="section-title">From wrist to insight<br>in seconds</h2>
+
+  <div class="steps-row">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Wear the band</h4>
+      <p>Lightweight, 5-day battery. Tracks HRV, skin conductance, temperature &amp; movement 24/7.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>Sync to app</h4>
+      <p>Bluetooth LE sync every 15 minutes. Works with iOS &amp; Android. No subscription to get started.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Log your mood</h4>
+      <p>30-second daily check-ins train your personal model — it learns your unique stress signatures.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Get insights</h4>
+      <p>Personalised wellbeing score, trend graphs, and gentle AI-backed suggestions delivered daily.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-wrap">
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num">82%</div>
+      <div class="stat-label">users report lower anxiety after 4 weeks</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">2,400+</div>
+      <div class="stat-label">active beta users across South Asia</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">94%</div>
+      <div class="stat-label">accuracy in stress episode detection</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">clinical pilots ongoing</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <p class="section-tag">Testimonials</p>
+  <h2 class="section-title">What our users say</h2>
+
+  <div class="test-grid">
+    <div class="test-card">
+      <div class="test-header">
+        <div class="test-avatar av1">PR</div>
+        <div>
+          <div class="test-name">Priya R.</div>
+          <div class="test-role">Software Engineer, Hyderabad</div>
+        </div>
+      </div>
+      <div class="stars">★★★★★</div>
+      <blockquote>"The stress alerts actually helped me identify that my anxiety spikes every Sunday evening. I never noticed that pattern before. A game-changer for self-awareness."</blockquote>
+    </div>
+    <div class="test-card">
+      <div class="test-header">
+        <div class="test-avatar av2">AK</div>
+        <div>
+          <div class="test-name">Arjun K.</div>
+          <div class="test-role">Medical Resident, Chennai</div>
+        </div>
+      </div>
+      <div class="stars">★★★★★</div>
+      <blockquote>"I shared my weekly reports with my therapist and it completely changed our conversations. We can now focus on what actually happened instead of what I remember."</blockquote>
+    </div>
+    <div class="test-card">
+      <div class="test-header">
+        <div class="test-avatar av3">SM</div>
+        <div>
+          <div class="test-name">Sneha M.</div>
+          <div class="test-role">College student, Pune</div>
+        </div>
+      </div>
+      <div class="stars">★★★★☆</div>
+      <blockquote>"As someone dealing with exam anxiety, having a daily wellness score made me take my mental health seriously for the first time. The app feels kind, not clinical."</blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-wrap" id="cta">
+  <div class="cta-section">
+    <h2>Ready to understand<br>your mind better?</h2>
+    <p>Pre-order the MindPulse band and get 3 months of premium insights free. Ships October 2025.</p>
+    <div class="cta-row">
+      <button class="btn-white" onclick="startPreorder()">Pre-order — ₹4,999</button>
+      <button class="btn-outline-white" onclick="scrollTo('howitworks')">Learn about the research</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="logo" onclick="goHome()">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      </div>
+      <span class="logo-name">MindPulse</span>
+    </div>
+    <ul class="footer-links">
+      <li><a href="#">Privacy</a></li>
+      <li><a href="#">Research</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Terms</a></li>
+    </ul>
+    <p style="font-size:13px;color:#6b7280">© 2025 MindPulse Health Pvt. Ltd.</p>
+  </div>
+</footer>
+
+</div><!-- end page-home -->
+
+
+<!-- ============================================================ -->
+<!-- PAGE: LOGIN / SIGNUP -->
+<!-- ============================================================ -->
+<div id="page-login" class="page">
+<div class="auth-page">
+
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <span class="logo-name">MindPulse</span>
+  </div>
+  <div></div>
+  <div></div>
+</nav>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Welcome back 👋</h2>
+    <p class="auth-sub">Sign in to your MindPulse account or create a new one to pre-order and track your wellness journey.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="form-login">
+      <div class="auth-error" id="login-error"></div>
+      <div class="auth-success" id="login-success"></div>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="login-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password" />
+      </div>
+      <div class="forgot-link">Forgot password?</div>
+      <button class="auth-btn" onclick="doLogin()">Sign In</button>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="form-signup" style="display:none">
+      <div class="auth-error" id="signup-error"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>First name</label>
+          <input type="text" id="signup-fname" placeholder="Priya" />
+        </div>
+        <div class="form-group">
+          <label>Last name</label>
+          <input type="text" id="signup-lname" placeholder="Sharma" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Phone number</label>
+        <input type="tel" id="signup-phone" placeholder="+91 98765 43210" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="Min. 8 characters" />
+      </div>
+      <button class="auth-btn" onclick="doSignup()">Create Account</button>
+    </div>
+
+    <div class="auth-divider"><span>or continue as</span></div>
+    <button class="auth-btn" style="background:white;color:var(--text);border:1.5px solid #e5e7eb" onclick="guestPreorder()">
+      👤 &nbsp;Continue as Guest
+    </button>
+  </div>
+</div>
+
+</div>
+</div><!-- end page-login -->
+
+
+<!-- ============================================================ -->
+<!-- PAGE: PRE-ORDER FORM -->
+<!-- ============================================================ -->
+<div id="page-preorder" class="page">
+<div class="preorder-page">
+
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <span class="logo-name">MindPulse</span>
+  </div>
+  <div></div>
+  <div id="preorder-nav-right"></div>
+</nav>
+
+<div class="preorder-container">
+  <div class="preorder-header">
+    <div class="back-btn" onclick="goHome()">← Back to home</div>
+    <h2>Pre-order MindPulse</h2>
+    <p>Reserve your band today. Ships October 2025. Cancel anytime before dispatch.</p>
+  </div>
+
+  <div class="auth-error" id="preorder-error" style="margin-bottom:1rem"></div>
+
+  <!-- PRODUCT SELECTION -->
+  <div class="order-card">
+    <h3><div class="card-icon">📦</div>Choose your bundle</h3>
+    <div class="product-select">
+      <div class="product-opt selected" id="opt-standard" onclick="selectProduct('standard')">
+        <div class="prod-name">MindPulse Standard</div>
+        <div class="prod-price">₹4,999</div>
+        <div class="prod-desc">Band + app (3 months premium free)</div>
+        <span class="prod-badge">Most popular</span>
+      </div>
+      <div class="product-opt" id="opt-pro" onclick="selectProduct('pro')">
+        <div class="prod-name">MindPulse Pro</div>
+        <div class="prod-price">₹7,499</div>
+        <div class="prod-desc">Band + app + therapist portal access (6 months premium free)</div>
+        <span class="prod-badge" style="background:var(--lav-mid)">Best value</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Band colour</label>
+      <div class="color-select">
+        <div class="color-dot selected" style="background:#1D9E75" title="Sage Green" onclick="selectColor(this,'Sage Green')"></div>
+        <div class="color-dot" style="background:#1a1a2e" title="Midnight" onclick="selectColor(this,'Midnight')"></div>
+        <div class="color-dot" style="background:#7F77DD" title="Lavender" onclick="selectColor(this,'Lavender')"></div>
+        <div class="color-dot" style="background:#D85A30" title="Terracotta" onclick="selectColor(this,'Terracotta')"></div>
+        <div class="color-dot" style="background:#e5e7eb;border:1px solid #d1d5db" title="Pearl White" onclick="selectColor(this,'Pearl White')"></div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:.5rem" id="color-label">Selected: Sage Green</p>
+    </div>
+  </div>
+
+  <!-- PERSONAL DETAILS -->
+  <div class="order-card">
+    <h3><div class="card-icon">👤</div>Personal details</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>First name *</label>
+        <input type="text" id="po-fname" placeholder="Priya" />
+      </div>
+      <div class="form-group">
+        <label>Last name *</label>
+        <input type="text" id="po-lname" placeholder="Sharma" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email address *</label>
+      <input type="email" id="po-email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label>Phone number *</label>
+      <input type="tel" id="po-phone" placeholder="+91 98765 43210" />
+    </div>
+  </div>
+
+  <!-- SHIPPING ADDRESS -->
+  <div class="order-card">
+    <h3><div class="card-icon">🏠</div>Shipping address</h3>
+    <div class="form-group">
+      <label>Address line 1 *</label>
+      <input type="text" id="po-addr1" placeholder="Flat / House no., Building name" />
+    </div>
+    <div class="form-group">
+      <label>Address line 2</label>
+      <input type="text" id="po-addr2" placeholder="Street, Area, Landmark" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>City *</label>
+        <input type="text" id="po-city" placeholder="Hyderabad" />
+      </div>
+      <div class="form-group">
+        <label>PIN code *</label>
+        <input type="text" id="po-pin" placeholder="500001" maxlength="6" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>State *</label>
+      <select id="po-state">
+        <option value="">Select state</option>
+        <option>Andhra Pradesh</option><option>Arunachal Pradesh</option>
+        <option>Assam</option><option>Bihar</option><option>Chhattisgarh</option>
+        <option>Delhi</option><option>Goa</option><option>Gujarat</option>
+        <option>Haryana</option><option>Himachal Pradesh</option>
+        <option>Jharkhand</option><option>Karnataka</option>
+        <option>Kerala</option><option>Madhya Pradesh</option>
+        <option>Maharashtra</option><option>Manipur</option>
+        <option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option>
+        <option>Odisha</option><option>Punjab</option><option>Rajasthan</option>
+        <option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option>
+        <option>Tripura</option><option>Uttar Pradesh</option>
+        <option>Uttarakhand</option><option>West Bengal</option>
+        <option>Andaman & Nicobar Islands</option><option>Chandigarh</option>
+        <option>Dadra & Nagar Haveli</option><option>Daman & Diu</option>
+        <option>Jammu & Kashmir</option><option>Ladakh</option>
+        <option>Lakshadweep</option><option>Puducherry</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- PAYMENT NOTE -->
+  <div class="order-card">
+    <h3><div class="card-icon">💳</div>Payment</h3>
+    <div style="background:#f8faf9;border-radius:12px;padding:1rem 1.2rem;font-size:.875rem;color:var(--muted);line-height:1.7">
+      🔐 <strong style="color:var(--text)">Secure pre-order — no charge today.</strong><br>
+      You'll receive a payment link via email once the device ships (October 2025). Pre-orders can be cancelled anytime before dispatch.
+    </div>
+    <div class="form-group" style="margin-top:1rem">
+      <label>Special requests / notes <span style="font-weight:300;color:var(--muted)">(optional)</span></label>
+      <textarea id="po-notes" placeholder="e.g. gift packaging, specific delivery instructions…"></textarea>
+    </div>
+  </div>
+
+  <!-- ORDER SUMMARY -->
+  <div class="order-summary" id="order-summary">
+    <div class="summary-row">
+      <span>Product</span>
+      <span id="sum-product">MindPulse Standard</span>
+    </div>
+    <div class="summary-row">
+      <span>Colour</span>
+      <span id="sum-color">Sage Green</span>
+    </div>
+    <div class="summary-row">
+      <span>Shipping</span>
+      <span>Free</span>
+    </div>
+    <div class="summary-row">
+      <span>3 months premium</span>
+      <span>Free</span>
+    </div>
+    <div class="summary-row total">
+      <span>Due at shipment</span>
+      <span id="sum-price">₹4,999</span>
+    </div>
+  </div>
+
+  <button class="place-order-btn" id="place-order-btn" onclick="placeOrder()">
+    <span id="order-btn-text">Confirm Pre-order</span>
+    <div class="spinner" id="order-spinner"></div>
+  </button>
+  <p class="secure-note">🔒 Your data is encrypted and never sold. Ships October 2025.</p>
+</div>
+
+</div>
+</div><!-- end page-preorder -->
+
+
+<!-- ============================================================ -->
+<!-- PAGE: SUCCESS -->
+<!-- ============================================================ -->
+<div id="page-success" class="page">
+<div class="success-page">
+
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <span class="logo-name">MindPulse</span>
+  </div>
+  <div></div><div></div>
+</nav>
+
+<div class="success-container">
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <h2>You're on the list! 🎉</h2>
+    <p>Your MindPulse pre-order is confirmed. We'll send the payment link when your band is ready to ship in October 2025. In the meantime, follow us for updates.</p>
+    <div class="order-ref">
+      Your order reference
+      <strong id="success-ref">MP-000000</strong>
+    </div>
+    <div id="success-details" style="text-align:left;font-size:.875rem;color:var(--muted);margin-bottom:2rem;line-height:1.8"></div>
+    <button class="auth-btn" style="margin-bottom:1rem" onclick="goHome()">Back to Home</button>
+    <button class="auth-btn" style="background:white;color:var(--text);border:1.5px solid #e5e7eb" onclick="showPage('page-preorder')">View Orders</button>
+  </div>
+</div>
+
+</div>
+</div><!-- end page-success -->
+
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================ -->
+<script>
+
+  // ─── SIMPLE IN-BROWSER DATABASE ──────────────────────────────
+  // Uses localStorage to persist users & orders between sessions.
+
+  const DB = {
+    getUsers()    { try { return JSON.parse(localStorage.getItem('mp_users') || '[]');  } catch(e){ return []; } },
+    getOrders()   { try { return JSON.parse(localStorage.getItem('mp_orders') || '[]'); } catch(e){ return []; } },
+    saveUsers(u)  { localStorage.setItem('mp_users',  JSON.stringify(u)); },
+    saveOrders(o) { localStorage.setItem('mp_orders', JSON.stringify(o)); },
+
+    findUser(email) {
+      return this.getUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+    },
+
+    addUser(data) {
+      const users = this.getUsers();
+      users.push({ ...data, id: 'U' + Date.now(), createdAt: new Date().toISOString() });
+      this.saveUsers(users);
+    },
+
+    addOrder(data) {
+      const orders = this.getOrders();
+      const ref = 'MP-' + Math.random().toString(36).substr(2,6).toUpperCase();
+      const order = { ...data, ref, createdAt: new Date().toISOString(), status: 'Confirmed' };
+      orders.push(order);
+      this.saveOrders(orders);
+      return ref;
+    }
+  };
+
+  // ─── SESSION ─────────────────────────────────────────────────
+  let currentUser = null;
+  try { currentUser = JSON.parse(sessionStorage.getItem('mp_session')); } catch(e){}
+
+  function saveSession(user) {
+    currentUser = user;
+    sessionStorage.setItem('mp_session', JSON.stringify(user));
+  }
+
+  function clearSession() {
+    currentUser = null;
+    sessionStorage.removeItem('mp_session');
+  }
+
+  // ─── STATE ───────────────────────────────────────────────────
+  let selectedProduct = 'standard';
+  let selectedColor   = 'Sage Green';
+  const prices = { standard: '₹4,999', pro: '₹7,499' };
+  const productNames = { standard: 'MindPulse Standard', pro: 'MindPulse Pro' };
+
+  // ─── PAGE ROUTING ─────────────────────────────────────────────
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+    if (id === 'page-home') updateNavUser();
+  }
+
+  function goHome() { showPage('page-home'); updateNavUser(); }
+
+  function updateNavUser() {
+    const nr = document.getElementById('nav-right');
+    if (!nr) return;
+    if (currentUser) {
+      const initials = ((currentUser.fname || currentUser.name || '?')[0]).toUpperCase();
+      nr.innerHTML = `
+        <div class="nav-user">
+          <div class="nav-user-avatar">${initials}</div>
+          <span>Hi, ${currentUser.fname || currentUser.name}</span>
+        </div>
+        <span class="nav-login" onclick="doLogout()">Logout</span>
+        <button class="nav-cta" onclick="startPreorder()">Pre-order</button>
+      `;
+    } else {
+      nr.innerHTML = `
+        <span class="nav-login" onclick="showPage('page-login')">Login</span>
+        <button class="nav-cta" onclick="scrollTo('cta')">Get early access</button>
+      `;
+    }
+  }
+
+  function doLogout() {
+    clearSession();
+    updateNavUser();
+    alert('You have been logged out.');
+  }
+
+  // ─── SMOOTH SCROLL (HOME PAGE) ────────────────────────────────
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ─── AUTH TABS ────────────────────────────────────────────────
+  function switchAuthTab(tab) {
+    document.getElementById('form-login').style.display  = tab === 'login'  ? 'block' : 'none';
+    document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    document.getElementById('tab-login').classList.toggle('active',  tab === 'login');
+    document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+    clearAuthMessages();
+  }
+
+  function clearAuthMessages() {
+    ['login-error','login-success','signup-error'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.display = 'none'; el.textContent = ''; }
+    });
+  }
+
+  function showMsg(id, msg, type='error') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.className = type === 'success' ? 'auth-success' : 'auth-error';
+  }
+
+  // ─── LOGIN ───────────────────────────────────────────────────
+  function doLogin() {
+    clearAuthMessages();
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) { showMsg('login-error', 'Please fill in all fields.'); return; }
+
+    const user = DB.findUser(email);
+    if (!user)               { showMsg('login-error', 'No account found with that email. Please sign up.'); return; }
+    if (user.password !== btoa(password)) { showMsg('login-error', 'Incorrect password. Please try again.'); return; }
+
+    saveSession(user);
+    showMsg('login-success', `Welcome back, ${user.fname}! Redirecting…`, 'success');
+    setTimeout(() => {
+      updateNavUser();
+      showPage('page-preorder');
+      prefillFromUser(user);
+    }, 900);
+  }
+
+  // ─── SIGNUP ──────────────────────────────────────────────────
+  function doSignup() {
+    clearAuthMessages();
+    const fname    = document.getElementById('signup-fname').value.trim();
+    const lname    = document.getElementById('signup-lname').value.trim();
+    const email    = document.getElementById('signup-email').value.trim();
+    const phone    = document.getElementById('signup-phone').value.trim();
+    const password = document.getElementById('signup-password').value;
+
+    if (!fname || !lname || !email || !phone || !password) {
+      showMsg('signup-error', 'Please fill in all fields.'); return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showMsg('signup-error', 'Please enter a valid email address.'); return;
+    }
+    if (password.length < 8) {
+      showMsg('signup-error', 'Password must be at least 8 characters.'); return;
+    }
+    if (DB.findUser(email)) {
+      showMsg('signup-error', 'An account with this email already exists. Please sign in.'); return;
+    }
+
+    const user = { fname, lname, name: fname + ' ' + lname, email, phone, password: btoa(password) };
+    DB.addUser(user);
+    saveSession(user);
+
+    showMsg('login-success', `Account created! Welcome, ${fname}!`, 'success');
+    setTimeout(() => {
+      updateNavUser();
+      showPage('page-preorder');
+      prefillFromUser(user);
+    }, 900);
+  }
+
+  // ─── GUEST ───────────────────────────────────────────────────
+  function guestPreorder() {
+    showPage('page-preorder');
+  }
+
+  // ─── PRE-FILL FROM USER ──────────────────────────────────────
+  function prefillFromUser(user) {
+    if (!user) return;
+    if (user.fname) document.getElementById('po-fname').value = user.fname;
+    if (user.lname) document.getElementById('po-lname').value = user.lname;
+    if (user.email) document.getElementById('po-email').value = user.email;
+    if (user.phone) document.getElementById('po-phone').value = user.phone;
+  }
+
+  // ─── START PRE-ORDER ─────────────────────────────────────────
+  function startPreorder() {
+    if (!currentUser) {
+      showPage('page-login');
+      return;
+    }
+    showPage('page-preorder');
+    prefillFromUser(currentUser);
+    updatePreorderNav();
+  }
+
+  function updatePreorderNav() {
+    const el = document.getElementById('preorder-nav-right');
+    if (!el) return;
+    if (currentUser) {
+      const initials = ((currentUser.fname || '?')[0]).toUpperCase();
+      el.innerHTML = `<div class="nav-user"><div class="nav-user-avatar">${initials}</div><span>${currentUser.fname}</span></div>`;
+    }
+  }
+
+  // ─── PRODUCT / COLOR SELECTION ────────────────────────────────
+  function selectProduct(type) {
+    selectedProduct = type;
+    document.getElementById('opt-standard').classList.toggle('selected', type === 'standard');
+    document.getElementById('opt-pro').classList.toggle('selected', type === 'pro');
+    document.getElementById('sum-product').textContent = productNames[type];
+    document.getElementById('sum-price').textContent   = prices[type];
+  }
+
+  function selectColor(el, name) {
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedColor = name;
+    document.getElementById('color-label').textContent = 'Selected: ' + name;
+    document.getElementById('sum-color').textContent   = name;
+  }
+
+  // ─── PLACE ORDER ─────────────────────────────────────────────
+  function placeOrder() {
+    const err  = document.getElementById('preorder-error');
+    err.style.display = 'none';
+
+    const fname  = document.getElementById('po-fname').value.trim();
+    const lname  = document.getElementById('po-lname').value.trim();
+    const email  = document.getElementById('po-email').value.trim();
+    const phone  = document.getElementById('po-phone').value.trim();
+    const addr1  = document.getElementById('po-addr1').value.trim();
+    const city   = document.getElementById('po-city').value.trim();
+    const pin    = document.getElementById('po-pin').value.trim();
+    const state  = document.getElementById('po-state').value;
+    const notes  = document.getElementById('po-notes').value.trim();
+    const addr2  = document.getElementById('po-addr2').value.trim();
+
+    if (!fname || !lname || !email || !phone || !addr1 || !city || !pin || !state) {
+      err.textContent = 'Please fill in all required fields (marked with *).';
+      err.style.display = 'block';
+      err.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      err.textContent = 'Please enter a valid email address.';
+      err.style.display = 'block'; return;
+    }
+    if (!/^\d{6}$/.test(pin)) {
+      err.textContent = 'Please enter a valid 6-digit PIN code.';
+      err.style.display = 'block'; return;
+    }
+
+    // Show loading
+    const btn = document.getElementById('place-order-btn');
+    document.getElementById('order-btn-text').textContent = 'Placing order…';
+    document.getElementById('order-spinner').style.display = 'block';
+    btn.disabled = true;
+
+    // Save to DB
+    setTimeout(() => {
+      const orderData = {
+        customer: { fname, lname, email, phone },
+        product: productNames[selectedProduct],
+        color: selectedColor,
+        price: prices[selectedProduct],
+        address: { line1: addr1, line2: addr2, city, pin, state },
+        notes,
+        userId: currentUser ? currentUser.id : 'guest'
+      };
+
+      const ref = DB.addOrder(orderData);
+
+      // Update success page
+      document.getElementById('success-ref').textContent = ref;
+      document.getElementById('success-details').innerHTML = `
+        <strong style="color:var(--text)">Order summary</strong><br>
+        👤 ${fname} ${lname}<br>
+        📧 ${email}<br>
+        📦 ${productNames[selectedProduct]} — ${selectedColor}<br>
+        💰 ${prices[selectedProduct]} (due at shipment)<br>
+        🏠 ${addr1}${addr2 ? ', '+addr2 : ''}, ${city}, ${state} — ${pin}
+      `;
+
+      // Reset button
+      document.getElementById('order-btn-text').textContent = 'Confirm Pre-order';
+      document.getElementById('order-spinner').style.display = 'none';
+      btn.disabled = false;
+
+      showPage('page-success');
+    }, 1400);
+  }
+
+  // ─── MOOD ────────────────────────────────────────────────────
+  function selectMood(el) {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────────
+  updateNavUser();
+
+</script>
+</body>
+</html>
